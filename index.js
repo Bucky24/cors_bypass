@@ -1,0 +1,54 @@
+const express = require("express");
+const fs = require("fs");
+const path = require("path");
+const cors = require("cors");
+
+const PORT = process.env.PORT || 9090;
+
+const app = express();
+app.use(cors());
+
+app.get("/api", (req, res) => {
+    const url = req.query.url;
+    delete req.headers.host;
+    delete req.headers.referer;
+    delete req.headers['user-agent'];
+
+    console.log(`Got call to ${url} with`, req.headers);
+
+    fetch(url, {
+        method: "GET",
+        headers: req.headers,
+    }).then((response) => {
+        if (!response.ok) {
+            response.text().then((text) => {
+                console.log(`Fail for ${url}`);
+                res.status(response.status).end(text);
+            })
+        } else {
+            response.json().then((result) => {
+                console.log(`Success for ${url}`);
+                res.json(result).end();
+            });
+        }
+    });
+});
+
+app.get("/fetch.js", (req, res) => {
+    const fetchPath = path.join(__dirname + "/fetch.js");
+    let contents = fs.readFileSync(fetchPath, "utf8");
+    const base = req.protocol + '://' + req.get('host');
+    contents = contents.replace("<<BASE>>", base);
+
+    res.header("Content-Type", "text/javascript");
+    res.send(contents);
+});
+
+app.get("/", (req, res) => {
+    const base = req.protocol + '://' + req.get('host');
+    res.send("To use, add <br><pre>&lt;script src=\"" + base + "/fetch.js\"&gt;&lt;/script&gt;</pre><br>To your head tag, then use fetch as normal");
+})
+
+app.listen(PORT, () => {
+    console.log("Listening!");
+});
