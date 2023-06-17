@@ -37,7 +37,12 @@ app.get("/api", (req, res) => {
 app.get("/fetch.js", (req, res) => {
     const fetchPath = path.join(__dirname + "/fetch.js");
     let contents = fs.readFileSync(fetchPath, "utf8");
-    const base = req.protocol + '://' + req.get('host');
+    let protocol = req.protocol;
+    const host = req.get('host');
+    if (host.includes("heroku")) {
+        prococol = "https";
+    }
+    const base = protocol + '://' + host;
     contents = contents.replace("<<BASE>>", base);
 
     res.header("Content-Type", "text/javascript");
