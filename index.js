@@ -42,6 +42,7 @@ app.get("/fetch.js", (req, res) => {
     if (host.includes("heroku")) {
         prococol = "https";
     }
+    console.log(host, protocol, host.includes("heroku"));
     const base = protocol + '://' + host;
     contents = contents.replace("<<BASE>>", base);
 
