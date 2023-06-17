@@ -40,9 +40,8 @@ app.get("/fetch.js", (req, res) => {
     let protocol = req.protocol;
     const host = req.get('host');
     if (host.includes("heroku")) {
-        prococol = "https";
+        protocol = "https";
     }
-    console.log(host, protocol, host.includes("heroku"));
     const base = protocol + '://' + host;
     contents = contents.replace("<<BASE>>", base);
 
