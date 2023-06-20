@@ -2,11 +2,15 @@ const express = require("express");
 const fs = require("fs");
 const path = require("path");
 const cors = require("cors");
+const bodyParser = require('body-parser');
 
 const PORT = process.env.PORT || 9090;
 
 const app = express();
 app.use(cors());
+app.use(bodyParser.raw({
+    type: '*/*',
+}));
 
 app.get("/api", (req, res) => {
     const url = req.query.url;
@@ -14,11 +18,39 @@ app.get("/api", (req, res) => {
     delete req.headers.referer;
     delete req.headers['user-agent'];
 
-    console.log(`Got call to ${url} with`, req.headers);
+    console.log(`Got GET call to ${url} with`, req.headers);
 
     fetch(url, {
         method: "GET",
         headers: req.headers,
+    }).then((response) => {
+        if (!response.ok) {
+            response.text().then((text) => {
+                console.log(`Fail for ${url}`);
+                res.status(response.status).end(text);
+            })
+        } else {
+            response.json().then((result) => {
+                console.log(`Success for ${url}`);
+                res.json(result).end();
+            });
+        }
+    });
+});
+
+app.post("/api", (req, res) => {
+    const url = req.query.url;
+    delete req.headers.host;
+    delete req.headers.referer;
+    delete req.headers['user-agent'];
+    const body = req.body;
+
+    console.log(`Got POST call to ${url} with`, req.headers, "and body", req.body.toString());
+
+    fetch(url, {
+        method: "POST",
+        headers: req.headers,
+        body,
     }).then((response) => {
         if (!response.ok) {
             response.text().then((text) => {
