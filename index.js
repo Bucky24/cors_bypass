@@ -82,7 +82,11 @@ app.get("/fetch.js", (req, res) => {
 });
 
 app.get("/", (req, res) => {
-    const base = req.protocol + '://' + req.get('host');
+    const host = req.get('host');
+    if (host.includes("heroku")) {
+        protocol = "https";
+    }
+    const base = protocol + '://' + host;
     res.send("To use, add <br><pre>&lt;script src=\"" + base + "/fetch.js\"&gt;&lt;/script&gt;</pre><br>To your head tag, then use fetch as normal");
 })
 
